@@ -92,7 +92,9 @@ private struct LaunchpadView: View {
     @State private var renameText = ""
     @FocusState private var searchFocused: Bool
 
-    private let columns = [GridItem(.adaptive(minimum: 112, maximum: 142), spacing: 50, alignment: .top)]
+    private let gridColumnSpacing: CGFloat = 28
+    private let minimumGridColumnWidth: CGFloat = 112
+    private let maximumGridColumnCount = 8
 
     private var entries: [AppEntry] {
         store.entries(in: currentFolderPath, manualGroupID: currentManualGroupID, query: searchText)
@@ -133,7 +135,7 @@ private struct LaunchpadView: View {
 
                     Spacer()
                 }
-                .frame(maxWidth: 990)
+                .frame(maxWidth: 1360)
 
                 HStack(spacing: 9) {
                     Image(systemName: "magnifyingglass")
@@ -154,7 +156,7 @@ private struct LaunchpadView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.top, 52)
                         } else {
-                            LazyVGrid(columns: columns, spacing: 25) {
+                            LazyVGrid(columns: gridColumns(for: scrollArea.size.width), spacing: 25) {
                                 ForEach(entries) { entry in
                                     AppTile(
                                         entry: entry,
@@ -171,9 +173,10 @@ private struct LaunchpadView: View {
                                     )
                                 }
                             }
-                            .frame(maxWidth: 1120)
+                            .frame(maxWidth: 1332)
                             .padding(.horizontal, 28)
                             .padding(.vertical, 8)
+                            .frame(maxWidth: .infinity)
                             .frame(minHeight: scrollArea.size.height, alignment: .top)
                             .coordinateSpace(name: "app-grid")
                             .onPreferenceChange(TileFramePreferenceKey.self) { tileFrames = $0 }
@@ -190,7 +193,7 @@ private struct LaunchpadView: View {
                         backgroundTapTarget
                     }
                 }
-                .frame(maxWidth: 1160)
+                .frame(maxWidth: 1440)
 
                 if store.apps.isEmpty {
                     ProgressView("正在扫描应用...")
@@ -240,6 +243,18 @@ private struct LaunchpadView: View {
         } message: {
             Text(store.errorMessage ?? "")
         }
+    }
+
+    private func gridColumns(for availableWidth: CGFloat) -> [GridItem] {
+        let gridWidth = min(max(availableWidth - 56, 0), 1332)
+        let columnCount = min(
+            maximumGridColumnCount,
+            max(1, Int((gridWidth + gridColumnSpacing) / (minimumGridColumnWidth + gridColumnSpacing)))
+        )
+        return Array(
+            repeating: GridItem(.flexible(minimum: minimumGridColumnWidth, maximum: 142), spacing: gridColumnSpacing, alignment: .top),
+            count: columnCount
+        )
     }
 
     private func open(_ entry: AppEntry) {
