@@ -1,0 +1,44 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:LaunchpadApp}",
+            "name": "Debug LaunchpadApp",
+            "target": "LaunchpadApp",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug LaunchpadApp"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:LaunchpadApp}",
+            "name": "Release LaunchpadApp",
+            "target": "LaunchpadApp",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release LaunchpadApp"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:LaunchpadApp}",
+            "name": "Debug LaunchpadCoreChecks",
+            "target": "LaunchpadCoreChecks",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug LaunchpadCoreChecks"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:LaunchpadApp}",
+            "name": "Release LaunchpadCoreChecks",
+            "target": "LaunchpadCoreChecks",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release LaunchpadCoreChecks"
+        }
+    ]
+}
