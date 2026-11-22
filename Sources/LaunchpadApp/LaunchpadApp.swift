@@ -34,7 +34,8 @@ final class LaunchpadAppDelegate: NSObject, NSApplicationDelegate, NSWindowDeleg
         panel.backgroundColor = .clear
         panel.isOpaque = false
         panel.hasShadow = false
-        panel.hidesOnDeactivate = true
+        panel.isReleasedWhenClosed = false
+        panel.hidesOnDeactivate = false
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
         panel.worksWhenModal = true
         panel.delegate = self
@@ -45,21 +46,18 @@ final class LaunchpadAppDelegate: NSObject, NSApplicationDelegate, NSWindowDeleg
             panel?.orderOut(nil)
         }
 
-        NSApp.activate(ignoringOtherApps: true)
-        panel.makeKeyAndOrderFront(nil)
+        showPanel(panel)
     }
 
     func applicationDidBecomeActive(_ notification: Notification) {
         guard let panel else { return }
-        panel.setFrame(screenUnderPointer().frame, display: true)
-        panel.makeKeyAndOrderFront(nil)
+        showPanel(panel)
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         NSApp.activate(ignoringOtherApps: true)
         if let panel {
-            panel.setFrame(screenUnderPointer().frame, display: true)
-            panel.makeKeyAndOrderFront(nil)
+            showPanel(panel)
         }
         return true
     }
@@ -67,6 +65,16 @@ final class LaunchpadAppDelegate: NSObject, NSApplicationDelegate, NSWindowDeleg
     func windowShouldClose(_ sender: NSWindow) -> Bool {
         sender.orderOut(nil)
         return false
+    }
+
+    private func showPanel(_ panel: NSPanel) {
+        panel.setFrame(screenUnderPointer().frame, display: true)
+        NSApp.activate(ignoringOtherApps: true)
+        panel.orderFrontRegardless()
+        panel.makeKeyAndOrderFront(nil)
+        DispatchQueue.main.async {
+            panel.orderFrontRegardless()
+        }
     }
 
     private func screenUnderPointer() -> NSScreen {
@@ -195,7 +203,7 @@ private struct LaunchpadView: View {
                 }
                 .frame(maxWidth: 1440)
 
-                if store.apps.isEmpty {
+                if store.isScanning && store.apps.isEmpty {
                     ProgressView("正在扫描应用...")
                         .tint(.white)
                         .foregroundStyle(.white.opacity(0.7))

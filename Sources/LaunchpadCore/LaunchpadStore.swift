@@ -356,6 +356,7 @@ public enum LaunchpadLogic {
 @MainActor
 public final class LaunchpadStore: ObservableObject {
     @Published public private(set) var apps: [InstalledApp] = []
+    @Published public private(set) var isScanning = true
     @Published public private(set) var groups: [ManualGroup] = []
     @Published public private(set) var appOrders: [String: [String]] = [:]
     @Published public var errorMessage: String?
@@ -366,6 +367,8 @@ public final class LaunchpadStore: ObservableObject {
     private let supportDirectory: URL
     private let groupsURL: URL
     private let ordersURL: URL
+    private let appsCacheURL: URL
+    private var iconCache: [String: NSImage] = [:]
     private var scanTask: Task<Void, Never>?
 
     public init() {
@@ -374,8 +377,10 @@ public final class LaunchpadStore: ObservableObject {
             .appendingPathComponent("Library/Application Support/launchpadapp", isDirectory: true)
         groupsURL = supportDirectory.appendingPathComponent("app-groups.json")
         ordersURL = supportDirectory.appendingPathComponent("app-order.json")
+        appsCacheURL = supportDirectory.appendingPathComponent("apps-cache.json")
         groups = (try? JSONDecoder().decode([ManualGroup].self, from: Data(contentsOf: groupsURL))) ?? []
         appOrders = (try? JSONDecoder().decode([String: [String]].self, from: Data(contentsOf: ordersURL))) ?? [:]
+        apps = (try? JSONDecoder().decode([InstalledApp].self, from: Data(contentsOf: appsCacheURL))) ?? []
         refreshApplications()
     }
 
@@ -385,6 +390,7 @@ public final class LaunchpadStore: ObservableObject {
 
     public func refreshApplications() {
         scanTask?.cancel()
+        isScanning = true
         scanTask = Task { [weak self] in
             guard let self else { return }
             do {
@@ -392,8 +398,12 @@ public final class LaunchpadStore: ObservableObject {
                     try Self.scanApplications()
                 }.value
                 guard !Task.isCancelled else { return }
+                self.isScanning = false
+                guard scanned != self.apps else { return }
                 self.apps = scanned
+                self.persistAppCache()
             } catch {
+                self.isScanning = false
                 self.errorMessage = "无法扫描应用程序：\(error.localizedDescription)"
             }
         }
@@ -450,7 +460,23 @@ public final class LaunchpadStore: ObservableObject {
     }
 
     public func icon(for path: String) -> NSImage {
-        NSWorkspace.shared.icon(forFile: path)
+        if let cachedIcon = iconCache[path] {
+            return cachedIcon
+        }
+
+        let icon = NSWorkspace.shared.icon(forFile: path)
+        iconCache[path] = icon
+        return icon
+    }
+
+    private func persistAppCache() {
+        do {
+            try fileManager.createDirectory(at: supportDirectory, withIntermediateDirectories: true)
+            let data = try JSONEncoder().encode(apps)
+            try data.write(to: appsCacheURL, options: .atomic)
+        } catch {
+            errorMessage = "保存应用缓存失败：\(error.localizedDescription)"
+        }
     }
 
     public func saveOrder(_ paths: [String], context: String?) {
