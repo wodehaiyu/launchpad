@@ -1,82 +1,83 @@
 # Launchpad
 
-Launchpad 是一款使用 SwiftUI 和 AppKit 构建的原生 macOS 应用启动器。它以全屏面板展示已安装的应用，支持搜索、排序和文件夹分组。
+Launchpad is a native macOS app launcher built with SwiftUI and AppKit. It displays installed apps in a full-screen panel and supports search, sorting, and folders.
 
-## 功能
+## Features
 
-- 扫描 `/Applications`、`/System/Applications` 和当前用户的 `~/Applications`。
-- 按应用所在目录自动归类；目录中有多个应用时显示为文件夹。
-- 搜索应用名称或路径，并按回车启动根页面中的第一个匹配应用。
-- 拖动图标调整应用顺序，或将应用拖到其他应用、文件夹上创建或扩展分组。
-- 打开文件夹查看其中的应用；手动分组可以重命名，也可以通过拖出应用来移除成员。
-- 自动保存应用顺序和手动分组，重启后继续使用。
+- Scans `/Applications`, `/System/Applications`, and the current user's `~/Applications` directory.
+- Automatically groups apps by their containing directory; directories with multiple apps appear as folders.
+- Searches app names and paths. Press Return on the root page to launch the first matching app.
+- Drag icons to reorder apps or drop them onto other apps and folders to create or expand groups.
+- Open folders to browse their apps. Rename manual groups or remove apps from them by dragging apps out.
+- Saves app ordering and manual groups automatically so they are restored on the next launch.
 
-## 使用
+## Usage
 
-启动 Launchpad 后，搜索框会自动获得焦点。点击应用图标即可启动应用；点击文件夹可进入文件夹。按 `Esc` 或点击背景可返回上一级，在根页面则关闭面板。
+When Launchpad starts, the search field receives focus automatically. Click an app icon to launch it or a folder to open it. Press `Esc` or click the background to go back; on the root page, this closes the panel.
 
-拖动图标可调整顺序。将一个应用拖到另一个应用或文件夹上可创建或扩展手动分组。手动分组名称可双击编辑，也可通过右键菜单选择“重命名分组”。在分组内将应用拖到“移出分组”区域，可将其移出分组。
+Drag icons to reorder them. Drop an app onto another app or folder to create or expand a manual group. Double-click a manual group name to edit it, or use the context menu and choose **Rename Folder**. To remove an app from a group, drag it to the **Remove from Folder** area.
 
-搜索支持应用名称和路径。搜索时会过滤当前页面内容；根页面输入搜索词后按回车，可启动第一个匹配的应用。
+Search filters the current page by app name or path. On the root page, press Return to launch the first matching app.
 
-## 环境要求
+## Requirements
 
-- macOS 13 或更高版本
-- Swift 5.9 或更高版本，以及 Xcode Command Line Tools
+- macOS 13 or later
+- Swift 5.9 or later and the Xcode Command Line Tools
 
-## 开发与检查
+## Development and Checks
 
-在项目根目录运行：
+Run these commands from the project root:
 
 ```sh
-# 编译
+# Build
 swift build
 
-# 执行原生逻辑检查
+# Run native logic checks
 swift run LaunchpadCoreChecks
 
-# 以调试配置运行应用
+# Run the app in debug configuration
 swift run LaunchpadApp
 ```
 
-`LaunchpadCoreChecks` 是一个可执行检查程序，使用断言验证应用归类、搜索、分组、排序和持久化等核心逻辑。
+`LaunchpadCoreChecks` is an executable check suite that uses assertions to verify core logic, including app grouping, search, folder management, ordering, and persistence.
 
-## 构建 macOS 应用包
+## Build a macOS App Bundle
 
-运行打包脚本：
+Run the packaging script:
 
 ```sh
 ./scripts/build-macos.sh
 ```
 
-脚本以 Release 配置构建应用，并在 `dist/` 下生成 `LaunchpadApp.app` 和 `LaunchpadApp-mac-x64.zip`。可以直接打开应用包：
+The script builds the app in Release configuration and creates `LaunchpadApp.app` and `LaunchpadApp-mac-x64.zip` in `dist/`. Open the app bundle with:
 
 ```sh
 open dist/LaunchpadApp.app
 ```
 
-## 项目结构
+## Project Structure
 
 ```text
 Sources/
-  LaunchpadApp/        SwiftUI 界面和 AppKit 应用入口
-  LaunchpadCore/       应用扫描、分组、排序和持久化逻辑
-  LaunchpadCoreChecks/ 核心逻辑检查程序
-app-resources/         macOS 应用包的 Info.plist
-scripts/               macOS 应用包构建脚本
-Launchpad.icns         应用图标
-Package.swift          Swift Package 定义
+  LaunchpadApp/        SwiftUI interface and AppKit app entry point
+  LaunchpadCore/       App scanning, grouping, ordering, and persistence
+  LaunchpadCoreChecks/ Core logic check executable
+app-resources/         Info.plist for the macOS app bundle
+scripts/               macOS app bundle build script
+Launchpad.icns         App icon
+Package.swift          Swift Package definition
 ```
 
-## 本地数据
+## Local Data
 
-应用将数据保存在：
+Launchpad stores data in:
 
 ```text
 ~/Library/Application Support/launchpadapp/
 ```
 
-- `app-order.json`：根页面和各自动文件夹中的应用顺序。
-- `app-groups.json`：手动分组的名称、所属目录及应用路径。
+- `app-order.json`: App ordering on the root page and in automatic folders.
+- `app-groups.json`: Manual group names, parent directories, and app paths.
+- `apps-cache.json`: Cached list of installed apps for faster startup.
 
-应用扫描已安装的应用，不会移动或修改这些应用本身。
+Launchpad scans installed apps but does not move or modify them.
