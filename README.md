@@ -49,7 +49,14 @@ Run the packaging script:
 ./scripts/build-macos.sh
 ```
 
-The script builds the app in Release configuration and creates `LaunchpadApp.app` and `LaunchpadApp-mac-x64.zip` in `dist/`. Open the app bundle with:
+The script builds the app in Release configuration and creates these distributable files in `dist/`:
+
+- `LaunchpadApp.app`: the macOS application bundle.
+- `LaunchpadApp-mac-x64.zip`: a ZIP archive containing the application bundle.
+
+The repository includes the prebuilt app bundle and ZIP archive. The committed build targets Intel x86_64 Macs, requires macOS 13 or later, and has app version 1.0.0 (build 1). It is not code-signed or notarized, so macOS may display a security warning when you first open it.
+
+To open the app bundle built on your machine:
 
 ```sh
 open dist/LaunchpadApp.app
